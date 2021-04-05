@@ -1,0 +1,12 @@
+#chart {
+  border: 1px solid black;
+  margin: 0;
+  padding: 0;
+  /* width: 1000px;
+  height: 500px; */
+}
+
+.chart-container {
+  display: flex;
+  justify-content: center;
+}
