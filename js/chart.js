@@ -76,35 +76,87 @@ let prop = propertiesOfChartData(DATA, DATA2, DATA3);
 //=========================   MAIN   ======================================
 styleChart(chart);
 context = chart.getContext('2d');
-mousemove(0)
+mousemove(0);
 chart.addEventListener('mousemove', mousemove);
 
 //=========================================================================
 
-function mousemove({ offsetX }) {
-  context.clearRect(0,0,DPI_WIDTH,DPI_HEIGHT)
-  drawGrid(context, 10, 10, 2, 'lightgrey','grey');
+function mousemove({ offsetX, offsetY }) {
+  context.clearRect(0, 0, DPI_WIDTH, DPI_HEIGHT);
+  drawGrid(context, 10, 10, 2, 'lightgrey', 'grey');
   drawLegend(context, 0, -20, graph1, graph2, graph3, graph4);
   drawBars(context, DATA, graph1.lineWidth, graph1.color);
   drawBars(context, DATA2, graph2.lineWidth, graph2.color);
   drawBars(context, DATA3, graph3.lineWidth, graph3.color);
   drawChart(context, DATA2, graph4.lineWidth, graph4.color);
   chartTitle(context, 'Графики чего-то там', 'black');
-  drawCursorX(context,offsetX*DPI)
+  drawCursorX(context, offsetX * DPI);
+  drawCursorY(context, offsetY * DPI);
+
+  popTips(
+    context,
+    offsetX * DPI,
+    offsetY * DPI,
+    'X: ' + offsetX + '\nY: ' + offsetY
+  );
+  return {
+    destroy() {
+      context.removeEventListener('mousemove', mousemove);
+    },
+  };
 }
 
-function drawCursorX(ctx,mouseX) {
+function popTips(ctx, x, y, text) {
+  ctx.font = 'bold 40px sans';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = 'lightgrey';
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 3;
+  let arrText = text.split('\n');
+  let maxTextLen = 0;
+  let maxTextHeight = 0;
+  for (item of arrText) {
+    if (maxTextLen < ctx.measureText(item).actualBoundingBoxRight) {
+      maxTextLen = ctx.measureText(item).actualBoundingBoxRight;
+    }
+    if (maxTextHeight < ctx.measureText(item).actualBoundingBoxDescent) {
+      maxTextHeight = ctx.measureText(item).actualBoundingBoxDescent;
+    }
+  }
+  if (x > PADDING_LEFT && x < DPI_WIDTH - PADDING_RIGHT) {
+    let i = 0;
+    ctx.fillRect(x, y, maxTextLen + 10, maxTextHeight * arrText.length + 10);
+    ctx.strokeRect(x, y, maxTextLen + 10, maxTextHeight * arrText.length + 10);
+    for (item of arrText) {
+      ctx.fillStyle = 'black';
+      ctx.fillText(item, x + 5, y + 5 + maxTextHeight * i);
+      i++;
+    }
+  }
+}
+
+function drawCursorX(ctx, mouseX) {
   if (mouseX > PADDING_LEFT && mouseX < DPI_WIDTH - PADDING_RIGHT) {
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 1;
-    ctx.beginPath()
-    ctx.moveTo(mouseX, 0+PADDING_TOP)
-    ctx.lineTo(mouseX, DPI_HEIGHT - PADDING_BOTTOM)
-    ctx.closePath()
-    ctx.stroke()
+    ctx.beginPath();
+    ctx.moveTo(mouseX, 0 + PADDING_TOP);
+    ctx.lineTo(mouseX, DPI_HEIGHT - PADDING_BOTTOM);
+    ctx.closePath();
+    ctx.stroke();
   }
-
-
+}
+function drawCursorY(ctx, mouseY) {
+  if (mouseY > PADDING_TOP && mouseY < DPI_HEIGHT - PADDING_BOTTOM) {
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0 + PADDING_LEFT, mouseY);
+    ctx.lineTo(DPI_WIDTH - PADDING_RIGHT, mouseY);
+    ctx.closePath();
+    ctx.stroke();
+  }
 }
 
 function propertiesOfChartData(...datas) {
@@ -135,7 +187,6 @@ function propertiesOfChartData(...datas) {
   );
   scale.x = (DPI_WIDTH - PADDING_LEFT - PADDING_RIGHT) / (max.x - min.x);
   scale.y = (DPI_HEIGHT - PADDING_BOTTOM - PADDING_TOP) / (max.y - min.y);
-  console.log(max, min, scale);
   return { max, min, scale };
 }
 
@@ -148,12 +199,12 @@ function toCoord([x, y], minX, minY, scaleX, scaleY) {
 function styleChart(canvas) {
   canvas.style.width = WIDTH + 'px';
   canvas.style.height = HEIGHT + 'px';
+  canvas.style.cursor = 'none';
   canvas.width = DPI_WIDTH;
   canvas.height = DPI_HEIGHT;
 }
 
 function drawChart(ctx, data, lw, color) {
-
   ctx.strokeStyle = color;
   ctx.lineWidth = lw;
   ctx.beginPath();
@@ -177,11 +228,9 @@ function drawChart(ctx, data, lw, color) {
     ctx.lineTo(dot.x, dot.y);
   }
   ctx.stroke();
-
 }
 
 function drawBars(ctx, data, lw, color) {
-
   ctx.strokeStyle = color;
   ctx.lineWidth = lw;
 
@@ -199,11 +248,9 @@ function drawBars(ctx, data, lw, color) {
     ctx.closePath();
     ctx.stroke();
   }
-
 }
 
-function drawGrid(ctx, countX, countY, lw, color,textColor) {
-
+function drawGrid(ctx, countX, countY, lw, color, textColor) {
   ctx.strokeStyle = color;
   ctx.lineWidth = lw;
 
@@ -243,17 +290,14 @@ function drawGrid(ctx, countX, countY, lw, color,textColor) {
       DPI_HEIGHT - PADDING_BOTTOM - i
     );
   }
-
 }
 
-function chartTitle(ctx, text,textColor) {
-
+function chartTitle(ctx, text, textColor) {
   ctx.font = 'bold 40px sans';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = textColor;
   ctx.fillText(text, DPI_WIDTH / 2, DPI_HEIGHT - 10);
-
 }
 
 function drawLegend(ctx, startX, startY, ...args) {
@@ -280,7 +324,7 @@ function drawLegend(ctx, startX, startY, ...args) {
     ctx.fillText(
       item.text,
       PADDING_LEFT + startX + 60,
-      i * (item.textHeight + 5) + +startY + PADDING_TOP
+      i * (item.textHeight + 5) + startY + PADDING_TOP
     );
     i++;
   }
