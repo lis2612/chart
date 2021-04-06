@@ -45,17 +45,47 @@ const DATA3 = [
   [410, 90],
   [500, 120],
 ];
+const graph1 = {
+  text: 'График 1',
+  textHeight: 40,
+  color: 'green',
+  lineWidth: 30,
+};
+const graph2 = {
+  text: 'График 2',
+  textHeight: 40,
+  color: 'blue',
+  lineWidth: 25,
+};
+const graph3 = {
+  text: 'График 3',
+  textHeight: 40,
+  color: 'red',
+  lineWidth: 20,
+};
+const graph4 = {
+  text: 'График 4',
+  textHeight: 40,
+  color: 'grey',
+  lineWidth: 10,
+};
+
+
 const chart = document.getElementById('chart');
 let prop = propertiesOfChartData(DATA, DATA2, DATA3);
-// let prop = propertiesOfChartData(DATA);
+
 //-----------MAIN
 styleChart(chart);
 context = chart.getContext('2d');
 drawGrid(context, 10, 10, 2, 'lightgrey');
-drawChart(context, DATA, 3, 'red');
-drawChart(context, DATA2, 5, 'green');
-drawChart(context, DATA3, 8, 'blue');
-drawBars(context, DATA2, 30, 'blue');
+
+drawBars(context, DATA, graph1.lineWidth, graph1.color);
+drawBars(context, DATA2, graph2.lineWidth, graph2.color);
+drawBars(context, DATA3, graph3.lineWidth, graph3.color);
+drawChart(context, DATA2, graph4.lineWidth, graph4.color);
+
+chartTitle(context, 'Графики чего-то там');
+drawLegend(context,0,-20, graph1, graph2, graph3, graph4);
 
 function propertiesOfChartData(...datas) {
   const max = { x: 0, y: 0 };
@@ -83,8 +113,8 @@ function propertiesOfChartData(...datas) {
     null,
     allData.map((i) => i[1])
   );
-  scale.x = (DPI_WIDTH - PADDING_LEFT-PADDING_RIGHT) / (max.x - min.x);
-  scale.y = (DPI_HEIGHT - PADDING_BOTTOM-PADDING_TOP) / (max.y - min.y);
+  scale.x = (DPI_WIDTH - PADDING_LEFT - PADDING_RIGHT) / (max.x - min.x);
+  scale.y = (DPI_HEIGHT - PADDING_BOTTOM - PADDING_TOP) / (max.y - min.y);
   console.log(max, min, scale);
   return { max, min, scale };
 }
@@ -133,7 +163,13 @@ function drawBars(ctx, data, lw, color) {
   ctx.lineWidth = lw;
 
   for (let coords of data) {
-    let dot = toCoord(coords, prop.min.x, prop.min.y, prop.scale.x, prop.scale.y);
+    let dot = toCoord(
+      coords,
+      prop.min.x,
+      prop.min.y,
+      prop.scale.x,
+      prop.scale.y
+    );
     ctx.beginPath();
     ctx.moveTo(dot.x, DPI_HEIGHT - PADDING_BOTTOM);
     ctx.lineTo(dot.x, dot.y);
@@ -147,38 +183,65 @@ function drawGrid(ctx, countX, countY, lw, color) {
   ctx.lineWidth = lw;
 
   // draw X lines
-  let step = (DPI_WIDTH - PADDING_LEFT-PADDING_RIGHT) / (countX + 1);
-  for (let i = 0; i < (DPI_WIDTH - PADDING_LEFT); i += step) {
+  let step = (DPI_WIDTH - PADDING_LEFT - PADDING_RIGHT) / (countX + 1);
+  for (let i = 0; i < DPI_WIDTH - PADDING_LEFT; i += step) {
     ctx.beginPath();
     ctx.moveTo(i + PADDING_LEFT, DPI_HEIGHT - PADDING_BOTTOM);
     ctx.lineTo(i + PADDING_LEFT, PADDING_TOP);
     ctx.closePath();
     ctx.stroke();
     ctx.font = 'bold 30px sans';
-    ctx.textAlign = 'center'
-    ctx.textBaseline='top'
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
     ctx.fillText(
-      Math.floor(prop.min.x+i/prop.scale.x),
+      Math.floor(prop.min.x + i / prop.scale.x),
       i + PADDING_LEFT,
-      DPI_HEIGHT - PADDING_BOTTOM +10
+      DPI_HEIGHT - PADDING_BOTTOM + 10
     );
   }
 
   // draw Y lines
-  step = (DPI_HEIGHT - PADDING_BOTTOM-PADDING_TOP) / (countY + 1);
+  step = (DPI_HEIGHT - PADDING_BOTTOM - PADDING_TOP) / (countY + 1);
   for (let i = 0; i < DPI_HEIGHT - PADDING_BOTTOM; i += step) {
     ctx.beginPath();
-    ctx.moveTo(DPI_WIDTH-PADDING_RIGHT, i+PADDING_TOP);
-    ctx.lineTo(PADDING_LEFT, i+PADDING_TOP);
+    ctx.moveTo(DPI_WIDTH - PADDING_RIGHT, i + PADDING_TOP);
+    ctx.lineTo(PADDING_LEFT, i + PADDING_TOP);
     ctx.closePath();
     ctx.stroke();
     ctx.font = 'bold 30px sans';
-    ctx.textAlign = 'right'
-    ctx.textBaseline='middle'
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
     ctx.fillText(
-      Math.floor(prop.min.y+i/prop.scale.y),
-      PADDING_LEFT-30,
-      DPI_HEIGHT-PADDING_BOTTOM- i
+      Math.floor(prop.min.y + i / prop.scale.y),
+      PADDING_LEFT - 30,
+      DPI_HEIGHT - PADDING_BOTTOM - i
     );
+  }
+}
+
+function chartTitle(ctx, text) {
+  ctx.font = 'bold 40px sans';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(text, DPI_WIDTH / 2, DPI_HEIGHT - 10);
+}
+
+function drawLegend(context,startX,startY, ...args) {
+  let i = 1;
+  for (item of args) {
+    console.log(i);
+    context.font = 'bold' + item.textHeight + 'px sans';
+    context.textAlign = 'left';
+    context.textBaseline = 'middle';
+    context.fillStyle = item.color;
+    context.strokeStyle = item.color;
+    context.lineWidth = item.lineWidth;
+    context.beginPath();
+    context.moveTo(PADDING_LEFT + startX, i * (item.textHeight+5) + startY+PADDING_TOP);
+    context.lineTo(PADDING_LEFT + startX+40, i * (item.textHeight+5) + startY+PADDING_TOP);
+    context.closePath();
+    context.stroke();
+    context.fillText(item.text, PADDING_LEFT + startX+60, i * (item.textHeight+5) + +startY+PADDING_TOP);
+    i++;
   }
 }
