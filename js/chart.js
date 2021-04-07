@@ -92,14 +92,18 @@ function mousemove({ offsetX, offsetY }) {
   chartTitle(context, 'Графики чего-то там', 'black');
   drawCursorX(context, offsetX * DPI);
   drawCursorY(context, offsetY * DPI);
-  let realX = (offsetX * DPI - PADDING_LEFT) / prop.scale.x + prop.min.x
-  let realY=-(offsetY*DPI-DPI_HEIGHT+PADDING_BOTTOM)/prop.scale.y+prop.min.y
+  let realX = (offsetX * DPI - PADDING_LEFT) / prop.scale.x + prop.min.x;
+  let realY =
+    -(offsetY * DPI - DPI_HEIGHT + PADDING_BOTTOM) / prop.scale.y + prop.min.y;
   console.log(prop.scale.x);
   popTips(
     context,
     offsetX * DPI,
     offsetY * DPI,
-    'X: ' + Math.round(realX*100)/100 + '\nY: ' + Math.round(realY*100)/100
+    'X: ' +
+      Math.round(realX * 100) / 100 +
+      '\nY: ' +
+      Math.round(realY * 100) / 100
   );
   return {
     destroy() {
@@ -118,6 +122,7 @@ function popTips(ctx, x, y, text) {
   let arrText = text.split('\n');
   let maxTextLen = 0;
   let maxTextHeight = 0;
+
   for (item of arrText) {
     if (maxTextLen < ctx.measureText(item).actualBoundingBoxRight) {
       maxTextLen = ctx.measureText(item).actualBoundingBoxRight;
@@ -126,13 +131,30 @@ function popTips(ctx, x, y, text) {
       maxTextHeight = ctx.measureText(item).actualBoundingBoxDescent;
     }
   }
-  if (x > PADDING_LEFT && x < DPI_WIDTH - PADDING_RIGHT) {
+  let widthTooltip = maxTextLen + 10;
+  let heightTooltip = maxTextHeight * arrText.length + 10;
+  if (
+    x > PADDING_LEFT &&
+    x < DPI_WIDTH - PADDING_RIGHT &&
+    y > PADDING_TOP &&
+    y < DPI_HEIGHT - PADDING_BOTTOM
+  ) {
     let i = 0;
-    ctx.fillRect(x, y, maxTextLen + 10, maxTextHeight * arrText.length + 10);
-    ctx.strokeRect(x, y, maxTextLen + 10, maxTextHeight * arrText.length + 10);
+    let textX = x;
+    let textY = y;
+    if (x + widthTooltip > DPI_WIDTH - PADDING_RIGHT) {
+      widthTooltip = -widthTooltip;
+      textX+=widthTooltip
+    }
+    if (y + heightTooltip > DPI_HEIGHT - PADDING_BOTTOM) {
+      heightTooltip = -heightTooltip;
+      textY+=heightTooltip
+    }
+    ctx.fillRect(x, y, widthTooltip, heightTooltip);
+    ctx.strokeRect(x, y, widthTooltip, heightTooltip);
     for (item of arrText) {
       ctx.fillStyle = 'black';
-      ctx.fillText(item, x + 5, y + 5 + maxTextHeight * i);
+      ctx.fillText(item, textX + 5, textY + 5 + maxTextHeight * i);
       i++;
     }
   }
