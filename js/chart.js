@@ -92,12 +92,14 @@ function mousemove({ offsetX, offsetY }) {
   chartTitle(context, 'Графики чего-то там', 'black');
   drawCursorX(context, offsetX * DPI);
   drawCursorY(context, offsetY * DPI);
-
+  let realX = (offsetX * DPI - PADDING_LEFT) / prop.scale.x + prop.min.x
+  let realY=-(offsetY*DPI-DPI_HEIGHT+PADDING_BOTTOM)/prop.scale.y+prop.min.y
+  console.log(prop.scale.x);
   popTips(
     context,
     offsetX * DPI,
     offsetY * DPI,
-    'X: ' + offsetX + '\nY: ' + offsetY
+    'X: ' + Math.round(realX*100)/100 + '\nY: ' + Math.round(realY*100)/100
   );
   return {
     destroy() {
