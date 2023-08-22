@@ -2,49 +2,14 @@ const WIDTH = 1000;
 const HEIGHT = 500;
 const DPI = 2;
 const PADDING_BOTTOM = 100;
-const PADDING_TOP = 30;
+const PADDING_TOP = 50;
 const PADDING_LEFT = 100;
-const PADDING_RIGHT = 30;
+const PADDING_RIGHT = 50;
 const DPI_WIDTH = WIDTH * DPI;
 const DPI_HEIGHT = HEIGHT * DPI;
 
-const DATA = [
-  [10, 200],
-  [50, 0],
-  [100, 200],
-  [150, 50],
-  [200, 600],
-  [250, 50],
-  [300, 200],
-  [350, 50],
-  [400, 200],
-  [450, 20],
-];
+import { DATA, DATA2, DATA3 } from "./data.js";
 
-const DATA2 = [
-  [5, 120],
-  [20, 300],
-  [100, 55],
-  [170, 75],
-  [210, 100],
-  [250, 80],
-  [320, 500],
-  [400, 50],
-  [410, 150],
-  [450, 10],
-];
-const DATA3 = [
-  [5, 100],
-  [15, 25],
-  [80, 30],
-  [100, 75],
-  [140, 40],
-  [170, 50],
-  [230, 75],
-  [380, 70],
-  [410, 90],
-  [500, 120],
-];
 const graph1 = {
   text: 'График 1',
   textHeight: 40,
@@ -75,7 +40,7 @@ let prop = propertiesOfChartData(DATA, DATA2, DATA3);
 
 //=========================   MAIN   ======================================
 styleChart(chart);
-context = chart.getContext('2d');
+let context = chart.getContext('2d');
 mousemove(0);
 chart.addEventListener('mousemove', mousemove);
 
@@ -123,7 +88,7 @@ function popTips(ctx, x, y, text) {
   let maxTextLen = 0;
   let maxTextHeight = 0;
 
-  for (item of arrText) {
+  for (let item of arrText) {
     if (maxTextLen < ctx.measureText(item).actualBoundingBoxRight) {
       maxTextLen = ctx.measureText(item).actualBoundingBoxRight;
     }
@@ -188,8 +153,8 @@ function propertiesOfChartData(...datas) {
   const min = { x: 0, y: 0 };
   const scale = { x: 0, y: 0 };
   let allData = [];
-  for (data of datas) {
-    for (item of data) {
+  for (let data of datas) {
+    for (let item of data) {
       allData.push(item);
     }
   }
@@ -327,7 +292,7 @@ function chartTitle(ctx, text, textColor) {
 function drawLegend(ctx, startX, startY, ...args) {
   // ctx.save()
   let i = 1;
-  for (item of args) {
+  for (let item of args) {
     ctx.font = 'bold' + item.textHeight + 'px sans';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
